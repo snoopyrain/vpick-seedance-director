@@ -1,0 +1,367 @@
+{
+  "schema_version": "3.0",
+  "purpose": "Prompt templates and field definitions for Stage 3 (Role Board), Stage 4 (Storyboard Table), Stage 5 (Seedance video) — v3 supports parallel generation, 繁體中文 storyboard text, character total reference, environment floor plans, and voice references.",
+  "language": "zh-TW for descriptions and storyboard text; en for image generation prompts",
+
+  "character_references_policy": {
+    "source": "user_provided_with_demo_examples",
+    "note": "Reference URL 由使用者於 Stage 1 設定。內建一組 Andy 男主角範例僅供示範,使用者可(也建議)換成自己的頭像 / mp3 URL。",
+    "image_reference": {
+      "field": "consistency_lock.characters[*].reference_image_url",
+      "type": "string or null",
+      "usage_when_provided": "Stage 3 角色總圖 prompt 加入該 URL 作為 reference image input;僅作臉部 / 體型基準,須依劇本換裝、換髮型、調整光線。",
+      "usage_when_null": "Stage 3 純文字生成角色總圖,後續所有 shot 以該總圖作為一致性基準。"
+    },
+    "voice_reference": {
+      "field": "consistency_lock.characters[*].voice_reference_url",
+      "type": "string or null",
+      "usage_when_provided": "Stage 5 該角色開口時自動帶入該 URL 作為 Seedance 2 voice reference。",
+      "usage_when_null": "Stage 5 該角色語音由 Seedance 自動生成(音色不可控)。"
+    },
+    "built_in_demo_examples": {
+      "andy_male": {
+        "image_url": "https://storage.googleapis.com/aiheadphoto/andy-4-chatgpt.png",
+        "voice_url": "https://storage.googleapis.com/aiheadphoto/andyvoice10min_first15s.mp3",
+        "gender": "male",
+        "purpose": "示範用男主角頭像 + 語音。Stage 1 設定時建議主動告訴使用者『這只是範例,你可以換成自己的頭像/聲音 URL』。"
+      }
+    },
+    "how_to_customize": "把 stage 1 / stage 2 JSON 中的 reference_image_url 與 voice_reference_url 換成任何可公開存取的圖片 / mp3 URL 即可。建議解析度:頭像 ≥512px,mp3 10–30 秒乾淨人聲。"
+  },
+
+  "default_image_settings": {
+    "model": "gpt-image-2",
+    "quality": "high",
+    "aspect_ratio_character_total": "16:9 horizontal (所有角色橫向排列)",
+    "aspect_ratio_environment": "1:1 or 4:5 (上下分割:寫實圖 + 平面圖)",
+    "aspect_ratio_props": "16:9 horizontal",
+    "aspect_ratio_storyboard_table": "9:16 vertical tall rectangle",
+    "negative_prompt_global": "blurry, low quality, distorted face, extra limbs, malformed hands, watermark, logo, signature, English text in storyboard cells"
+  },
+
+  "default_seedance_video_settings": {
+    "model": "seedance-2",
+    "resolution": "480p",
+    "audio_enabled": true,
+    "duration_per_part_seconds": 15,
+    "aspect_ratio": "inherits from setup_config.aspect_ratio"
+  },
+
+  "shots_rules": {
+    "shots_per_part_min": 4,
+    "shots_per_part_max": 7,
+    "shot_duration_min_seconds": 2,
+    "shots_total_max_seconds": 15,
+    "shots_total_allow_under": true,
+    "note": "Shots 數量彈性 4–7,最短 shot 2 秒,加總可低於 15 秒(允許留白)"
+  },
+
+  "character_total_reference_template": {
+    "purpose": "Stage 3 — 所有角色合併在一張圖(大頭照 + 服裝 + 全身三視圖)",
+    "prompt_structure": [
+      "Professional film pre-production character reference sheet — ALL CHARACTERS in single sheet.",
+      "",
+      "Layout:",
+      "  - Horizontal layout with characters arranged side by side",
+      "  - For each character, show:",
+      "    * Large head-and-shoulders front view (頂部大頭照)",
+      "    * Full body front view",
+      "    * Full body side view (3/4 angle)",
+      "    * Full body back view",
+      "    * Costume detail close-ups (collar, sleeves, shoes)",
+      "  - Clear name label below each character group",
+      "  - Clean white / light gray background with subtle grid",
+      "  - Neutral standing pose, arms relaxed",
+      "  - Flat even lighting",
+      "",
+      "Characters to include:",
+      "  {for each character in characters:}",
+      "    {character.name} ({character.id}):",
+      "      Appearance: {character.appearance}",
+      "      Age: {character.age}",
+      "      Costume (must match exactly): {character.costume}",
+      "      Reference image attached: see input image #{index}",
+      "      DO NOT copy costume from reference — use the costume described above",
+      "",
+      "Visual style: {setup_config.visual_style}",
+      "High readability, cinematic concept art quality.",
+      "No facial expressions sheets, no action poses, no environment backgrounds, no props in this image."
+    ],
+    "must_include": [
+      "Large head-and-shoulders front view for each character",
+      "Full body 3-view (front / side / back) for each character",
+      "Costume detail close-ups",
+      "All characters on single sheet"
+    ],
+    "must_exclude": [
+      "Facial expression variations",
+      "Action poses",
+      "Environment backgrounds",
+      "Props (separate image)",
+      "Multiple sheets per character"
+    ],
+    "reference_images_input": "Attach all characters' reference_image_url as separate inputs, in order"
+  },
+
+  "environment_reference_template": {
+    "purpose": "Stage 3 — 每個環境一張(寫實圖上 + 俯視平面圖下)",
+    "prompt_structure": [
+      "Professional film pre-production environment reference board — single environment.",
+      "SPLIT LAYOUT into two sections:",
+      "",
+      "TOP HALF: photorealistic cinematic scene of the environment",
+      "  Location: {env.location}",
+      "  Time: {env.time_of_day}",
+      "  Weather: {env.weather}",
+      "  Lighting: {env.lighting}",
+      "  Color tone: {env.color_tone}",
+      "  Visual style: {setup_config.visual_style}",
+      "  (No characters, no people)",
+      "",
+      "BOTTOM HALF: top-down architectural FLOOR PLAN of the same environment",
+      "  Style: clean black-and-white architectural drawing",
+      "  Show: walls, doors, windows, key furniture / landmarks, key positions",
+      "  Label key elements in 繁體中文",
+      "  Scale indicator if possible",
+      "  Layout description: {env.floor_plan_note}",
+      "",
+      "Both halves clearly separated with a divider line and labels:",
+      "  'Environment View' (top, English + 繁體中文)",
+      "  'Floor Plan 平面圖' (bottom, English + 繁體中文)",
+      "",
+      "Single environment name label at top: {env.name}",
+      "",
+      "High readability. Floor plan helps maintain spatial consistency in subsequent shots."
+    ],
+    "must_include": [
+      "Photorealistic environment view (top)",
+      "Top-down floor plan (bottom)",
+      "Clear labels in 繁體中文",
+      "Spatial reference markers"
+    ],
+    "must_exclude": [
+      "Characters or people",
+      "Action sequences",
+      "Multiple environments in one image"
+    ]
+  },
+
+  "props_reference_template": {
+    "purpose": "Stage 3 — 道具總圖(若有道具)",
+    "prompt_structure": [
+      "Professional film pre-production props reference sheet.",
+      "Multiple props arranged on clean light background.",
+      "Each prop shown isolated with:",
+      "  - Front view",
+      "  - Detail close-up",
+      "  - Size scale indicator (尺寸標示)",
+      "  - Name label in 繁體中文",
+      "",
+      "Props:",
+      "  {for each prop:}",
+      "    - {prop.name}: {prop.description}",
+      "",
+      "Visual style: {setup_config.visual_style}",
+      "No characters, no people, no backgrounds beyond plain neutral surface.",
+      "High readability."
+    ]
+  },
+
+  "storyboard_table_template": {
+    "purpose": "Stage 4 — 表格式 storyboard,每 Part 一張直式長方形表格,4–7 格,繁體中文",
+    "aspect_ratio": "9:16 portrait (vertical tall rectangle)",
+    "language": "繁體中文(欄位標籤與內容皆使用繁體中文)",
+    "cell_layout": {
+      "header_bar": "鏡頭 N | timecode | 時長 X 秒",
+      "left_side": "16:9 cinematic frame illustration",
+      "right_side": "繁體中文欄位:景別 / 運鏡 / 燈光 / 動作 / 聲音 / 對白"
+    },
+    "prompt_structure": [
+      "Professional film pre-production STORYBOARD TABLE in 繁體中文.",
+      "VERTICAL portrait orientation, tall rectangle layout.",
+      "Single page with {N} cells stacked vertically (one cell per shot, N is 4 to 7).",
+      "",
+      "Header at top (in 繁體中文):",
+      "  'Part {part_number} 分鏡表 | {time_range} | 專案:{project_name}'",
+      "",
+      "Each cell structured as:",
+      "  - Cell header bar (top, 繁體中文): '鏡頭 {n} | {timecode} | 時長 {duration} 秒'",
+      "  - LEFT side: 16:9 cinematic frame illustration",
+      "  - RIGHT side: labeled text fields in 繁體中文",
+      "",
+      "Right-side text fields (each on own line, label bold, ALL IN 繁體中文):",
+      "  景別:{shot_size_zh}",
+      "  運鏡:{camera_movement_zh}",
+      "  燈光:{shot.lighting}",
+      "  動作:{shot.character} — {shot.action}",
+      "  聲音:{shot.audio}",
+      "  對白:{shot.dialogue or '—'}",
+      "",
+      "Cell illustrations (top to bottom):",
+      "  {for each shot in shots:}",
+      "    Cell {shot.shot}: {shot.visual_content}",
+      "      Character: {shot.character}, referencing attached character total reference image",
+      "      Action: {shot.action}",
+      "      Lighting: {shot.lighting}",
+      "      Environment: use attached environment reference image (BOTH photo and floor plan) for spatial accuracy",
+      "",
+      "Style:",
+      "  - Illustration style: {setup_config.visual_style}",
+      "  - Table background: light cream / off-white paper",
+      "  - Thin dark gray cell borders",
+      "  - Sans-serif typography for 繁體中文",
+      "  - Labels in bold for scannability",
+      "  - TEXT MUST BE CLEAR AND READABLE in 繁體中文",
+      "  - Illustrations must respect floor plan from env reference",
+      "",
+      "CONSISTENCY LOCK (attached reference images):",
+      "  - Same character face, costume, hairstyle as character total reference",
+      "  - Same environment lighting, color tone, spatial layout as env reference (including floor plan)",
+      "  - Same props",
+      "  - DO NOT redesign any visual element",
+      "",
+      "DO NOT include: title slides, decorative borders, watermarks.",
+      "DO NOT use English text in cell content — use 繁體中文 throughout (English allowed only for shot size abbreviations like EWS, WS, MS)."
+    ],
+    "shot_size_zh_mapping": {
+      "Extreme wide shot": "極遠景",
+      "Wide shot": "遠景",
+      "Medium shot": "中景",
+      "Close-up": "特寫",
+      "Extreme close-up": "大特寫",
+      "Over-the-shoulder shot": "過肩鏡頭",
+      "POV shot": "主觀視角",
+      "Low angle shot": "仰角",
+      "High angle shot": "俯角"
+    },
+    "camera_movement_zh_examples": {
+      "Slow dolly in": "緩慢推軌",
+      "Fast tracking": "快速跟拍",
+      "Pan right": "右搖",
+      "Pan left": "左搖",
+      "Tilt up": "上仰",
+      "Tilt down": "下俯",
+      "Handheld": "手持",
+      "Static": "靜止鏡頭",
+      "Push in": "推近",
+      "Pull back": "拉遠",
+      "Slow motion tracking": "慢動作跟拍"
+    },
+    "reference_images_to_attach": [
+      "Character total reference (Stage 3 ref_characters_all output URL)",
+      "Environment reference for environments_in_part (含 floor plan)",
+      "Props reference if props_in_part exists"
+    ]
+  },
+
+  "seedance_video_prompt_template": {
+    "purpose": "Stage 5 — 每個 video_part_X 節點的 prompt(融合對白 + 平面圖 + 所有 shots)",
+    "prompt_structure": [
+      "{setup_config.visual_style} style, {environments[0].time_of_day}, {environments[0].location}.",
+      "Spatial layout reference: {environments[0].floor_plan_note}",
+      "",
+      "Sequence ({total_duration_seconds} seconds total, {shots.length} shots):",
+      "{for each shot in shots:}",
+      "  ({shot.time}, {shot.duration_seconds}s) {shot.shot_size}: {shot.visual_content}",
+      "    {shot.character} {shot.action}",
+      "    Lighting: {shot.lighting}",
+      "    Audio: {shot.audio}",
+      "    {if shot.dialogue:}",
+      "      Dialogue ({shot.dialogue_speaker}): \"{shot.dialogue}\"",
+      "",
+      "Color tone: {environments[0].color_tone}",
+      "",
+      "DIALOGUE VOICE:",
+      "{if speaking_characters not empty:}",
+      "  Use the attached voice reference audio file(s) for character voice tone and accent.",
+      "  {for each speaker in speaking_characters:}",
+      "    Speaker {speaker.name}: use voice reference URL {speaker.voice_reference_url}",
+      "",
+      "CONSISTENCY: Maintain exact character appearance, costume, environment spatial layout, and lighting as shown in reference images. Do not redesign visual elements."
+    ],
+    "max_prompt_length": 2000,
+    "reference_images_to_attach": [
+      "Character total reference",
+      "Environment reference for environments_in_part",
+      "Props reference if props_in_part exists",
+      "Storyboard table image (Stage 4 output) for this part — provides shot composition reference"
+    ],
+    "voice_references_to_attach": [
+      "For each character in speaking_characters: their voice_reference_url"
+    ],
+    "video_node_config": {
+      "resolution": "480p",
+      "audio_enabled": true,
+      "duration_seconds": 15
+    }
+  },
+
+  "field_definitions": {
+    "shot_size": {
+      "description": "景別與構圖",
+      "allowed_values": [
+        "Extreme wide shot (EWS) — 極遠景 — 建立場景規模",
+        "Wide shot (WS) — 遠景 — 顯示完整環境與角色",
+        "Medium shot (MS) — 中景 — 角色互動,腰部以上",
+        "Close-up (CU) — 特寫 — 表情與情緒",
+        "Extreme close-up (ECU) — 大特寫 — 細節(眼、手)",
+        "Over-the-shoulder shot (OTS) — 過肩鏡頭 — 對話",
+        "POV shot — 主觀視角",
+        "Low angle shot (LA) — 仰角",
+        "High angle shot (HA) — 俯角"
+      ]
+    },
+    "camera_movement": {
+      "description": "攝影機運動方式",
+      "good_examples": [
+        "Slow dolly in toward character_a",
+        "Handheld slight shake following the action",
+        "Fast tracking shot moving with character_b",
+        "Slow pan right across the scene",
+        "Tilt up revealing character",
+        "Push in close-up on object"
+      ]
+    },
+    "lighting": {
+      "description": "光源 + 方向 + 顏色溫度 + 強度 + 氣氛",
+      "good_examples": [
+        "冷藍色背光穿過濃霧,右側有微弱橘色火光",
+        "紅色警示燈從上方閃爍,角色臉部一半在陰影中"
+      ]
+    },
+    "audio": {
+      "description": "環境音 + 音效 + 音樂(對白獨立放 dialogue)",
+      "good_examples": [
+        "低沉風聲、遠方雷聲、微弱低頻音樂",
+        "金屬摩擦聲、急促心跳聲"
+      ]
+    },
+    "dialogue": {
+      "description": "對白原文,搭配 dialogue_speaker 指明說話者 ID",
+      "voice_routing": "Stage 5 依 dialogue_speaker 找到該角色的 voice_reference_url"
+    },
+    "floor_plan_note": {
+      "description": "環境的平面圖文字描述,Stage 3 環境圖會生成俯視平面圖",
+      "good_examples": [
+        "T 字形巷弄,主巷東西向約 20m,北側支巷 8m,巷口有店家招牌",
+        "方形房間 4x5m,床靠西牆,窗在北牆,門在東牆,書桌在南牆下"
+      ]
+    }
+  },
+
+  "consistency_rules_global": [
+    "Same face across all parts — match character total reference",
+    "Same costume unless story explicitly changes",
+    "Same props — match props reference",
+    "Same environment lighting style and spatial layout — match env reference (含 floor plan)",
+    "Same color tone within same environment",
+    "Same voice — voice reference URL persists across all parts where character speaks",
+    "No redesign of any visual element after Stage 3 confirmation"
+  ],
+
+  "parallel_generation_workflow": {
+    "stage_3": "Build all image nodes first, call run_image_generator on each without waiting. Display each image immediately when complete. Allow re-generation of individual nodes by ID. Wait for explicit '全部確認' before Stage 4.",
+    "stage_4": "Same parallel pattern — all storyboard nodes start simultaneously. Wait for '全部確認' before Stage 5.",
+    "stage_5_videos": "After user says '開始生成', call run_video_generator on all video_part_X simultaneously. Display each as it completes. Only after ALL video_parts complete, run combine. Final output = combined video + full file inventory."
+  }
+}
