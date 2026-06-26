@@ -176,6 +176,50 @@ vpick:auto_layout(node_ids=[全部新建節點])
 vpick:get_screenshot()
 ```
 
+### Step 5.6b — 詢問是否預覽並調整 Seedance prompt(進硬門檻前)
+
+**在最終確認前,主動問使用者要不要看每段的 Seedance prompt 全文。** prompt 的導演含量是影片成敗關鍵,要給使用者機會檢視 / 調整。
+
+```
+影片節點的 prompt 都寫好了(導演級 STYLE PREFIX → Characters → Scene → CUT)。
+生成前要先看每段的完整 prompt 嗎?
+
+- 「看 prompt」 / 「show」 → 我把每個 video_part 的 prompt 全文貼出來,你可以逐段調整
+- 「直接生成」 / 「不用看」 → 跳過預覽,直接進最終確認
+```
+
+#### 若使用者要看 → 逐段貼出完整 prompt
+
+每個 video_part 一個 code block,把**填進該節點 `prompt` 欄位的完整字串**原樣貼出(含 Style Prefix、Characters、Scene、所有 CUT、DIALOGUE VOICE、CONSISTENCY):
+
+```
+━━━ video_part_1(0:00–0:15)━━━
+[完整 prompt 全文]
+
+━━━ video_part_2(0:15–0:30)━━━
+[完整 prompt 全文]
+
+...(每個 Part 一段)
+
+要調整哪一段就直接說,例如:
+- 「video_part_2 的 CUT 2 改成俯角」
+- 「Style Prefix 改成黑白片」
+- 「character_b 第一段的情緒改成猶豫」
+- 「全部節奏放慢一點」
+都滿意了就說「開始生成」。
+```
+
+#### 處理調整請求(可多輪)
+
+使用者要改某段 prompt 時:
+1. 依導演工法(`seedance-director-craft.md`)改寫該 video_part 的 prompt
+2. `vpick:update_node(node_id=video_part_X, prompt=<新 prompt>)` 寫回該節點
+3. 把改後的完整 prompt 再貼出來給使用者看
+4. 重複直到使用者說「開始生成」
+
+> ⚠️ 這一步**只改 prompt 字串**,不呼叫任何 `run_video_generator`。調整 prompt 不消耗生成 quota。
+> 全局調整(例:「整體再緊湊」「全部換成手持運鏡」)就把每個 video_part 都更新一遍。
+
 ### Step 5.7 — 最終確認(硬門檻)
 
 ```
@@ -297,3 +341,4 @@ VPick 專案連結:{project URL,若有}
 5. **Voice reference 自動串接**:依 Stage 2 `speaking_characters` 與角色 `voice_reference_url`(由使用者於 Stage 1 自備,可為 null)
 6. **最終必須列出完整檔案清單**(Step 5.10),所有 Stage 3 圖、Stage 4 圖、Stage 5 影片、合併影片
 7. **video prompt 用導演工法寫**(Step 5.4 + `seedance-director-craft.md`):STYLE PREFIX → Characters → Scene → CUT,show-don't-tell,運鏡有動機,填滿 15 秒,prompt 英文
+8. **生成前主動問是否預覽 prompt**(Step 5.6b):使用者想看就貼出每段完整 prompt,並可多輪調整(只 `update_node` 改字串,不 run);使用者說「開始生成」才進 Step 5.8

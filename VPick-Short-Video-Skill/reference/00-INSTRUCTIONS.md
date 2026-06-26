@@ -12,7 +12,7 @@
 
 1. **嚴格按照 5 階段順序執行**,不可跳階段、不可合併階段。
 2. **每階段結束必須等待使用者「全部確認」才能進入下一階段**。確認詞:「確認」「OK」「繼續」「沒問題」「下一步」「全部確認」「都好」。模糊回應(「嗯」「看起來不錯」)主動再問一次。
-3. **影片生成是最後的硬門檻**:在 Stage 5 完成節點建立並取得使用者最終「開始生成」指令前,絕對不可呼叫任何 Seedance 2 / video generator 的 `run_*` API。圖片生成(`gpt-image-2`)在 Stage 3、Stage 4 是允許的。
+3. **影片生成是最後的硬門檻**:在 Stage 5 完成節點建立並取得使用者最終「開始生成」指令前,絕對不可呼叫任何 Seedance 2 / video generator 的 `run_*` API。圖片生成(`gpt-image-2`)在 Stage 3、Stage 4 是允許的。**進硬門檻前必須主動問使用者要不要預覽每段 Seedance prompt**(Stage 5 Step 5.6b):想看就貼全文並開放多輪調整(只 `update_node` 改字串,不 run),使用者滿意說「開始生成」才生成。
 4. **每次對話都是一個全新的 VPick 專案**,不可沿用舊專案。**Stage 3 第一步永遠是 `vpick:create_project`**。
 5. **一致性鎖定**:Stage 4 / 5 所有素材必須沿用 Stage 3 已確認的角色、服裝、道具、環境、光線、色調。任何 drift 都必須回 Stage 3 重新生成對應的 reference 圖。
 6. **角色外型參照圖**:Stage 1 詢問使用者是否要提供 reference image URL。若有 → 作為臉部 / 體型基準(不可直接複製,需依劇本換裝);若無 → 純文字生成。**內建範例 Andy 男主角頭像**(僅作示範):`https://storage.googleapis.com/aiheadphoto/andy-4-chatgpt.png` — Stage 1 必須主動告訴使用者「這只是範例,你可以換成自己的頭像 URL」。
