@@ -3,6 +3,13 @@
 ## 目的
 **並行**生成所有 Part 的 Storyboard 表格圖。每張為「直式長方形表格」,內含該 Part 全部 shots(4–7 格),每格 = 標頭 + 左側示意圖 + 右側欄位文字。**所有文字使用繁體中文**。
 
+> 🎬 **分鏡表是 Stage 5 影片的構圖藍圖,要用導演工法寫(見 `seedance-director-craft.md`)。** 表格右側欄位不是流水帳:
+> - **動作**欄寫 blocking + 表演 beat(eye-line、micro-pause、呼吸),不是「他很緊張」→ 而是「瞳孔擴大,呼吸停頓,握緊傘柄」
+> - **運鏡**欄寫有動機的運鏡(「slow push-in as she realizes」),不是「電影感運鏡」
+> - **燈光**欄對齊全局 8K 寫實調(contre-jour、自然光、60:30:10),寫出窗在哪、光從哪來
+> - 左側示意圖要畫出**空間 blocking**(角色相對位置,依環境平面圖),不是隨意站位
+> - 插圖風格 = 寫實電影感(對齊鎖定的 8K photoreal 影片風格)
+
 ## 表格式 Storyboard 設計
 
 ### 整體版面
@@ -16,16 +23,18 @@
 
 ```
 ┌──────────────────────────────────────────────────┐
-│ 鏡頭 1  |  0:00–0:02  |  時長 2 秒                │
+│ 鏡頭 1（CUT 1）                                    │
 ├─────────────────────────┬────────────────────────┤
 │                         │ 景別:極遠景 EWS         │
-│   [示意圖 16:9]          │ 運鏡:靜止鏡頭           │
+│   [示意圖 16:9]          │ 運鏡:靜止鏡頭,讓身影逼近 │
 │   (依 shot.visual_       │ 燈光:橘黃路燈,身影成剪影 │
-│    content 生成)         │ 動作:character_b 緩步前進│
-│                         │ 聲音:腳步聲              │
+│    content 生成)         │ 動作:character_b 緩步走出,目光鎖定│
+│                         │ 聲音:腳步聲、雨聲        │
 │                         │ 對白:—                  │
 └─────────────────────────┴────────────────────────┘
 ```
+
+> ⏱️ 格子標頭只標「鏡頭 N(CUT N)」,**不標固定秒數 / timecode**——每個 Part = 15 秒 clip,cut 之間的節奏由 Seedance 判斷(v4 改變)。
 
 文字必須清楚可讀(給 Seedance 看)。
 - 標籤(欄位名稱)用較小但加粗的繁體中文
@@ -114,7 +123,7 @@ Header row at top of page (in 繁體中文):
 
 Each cell structured as:
   - Cell header bar (top, in 繁體中文): 
-    "鏡頭 {n} | {timecode} | 時長 {duration} 秒"
+    "鏡頭 {n}(CUT {n})"   (NO fixed seconds / timecode — pacing is decided by Seedance within the 15s part)
   - LEFT side of cell body: 16:9 cinematic frame illustration of the scene
   - RIGHT side of cell body: labeled text fields IN 繁體中文
 

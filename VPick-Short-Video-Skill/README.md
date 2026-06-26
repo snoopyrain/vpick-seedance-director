@@ -16,29 +16,30 @@
 
 ### 2. 安裝 skill
 
-把整個 `VPick-Short-Video-Skill/` 複製或 symlink 到 `~/.claude/skills/vpick-storyboard/`:
+把整個 `VPick-Short-Video-Skill/` 複製或 symlink 到 `~/.claude/skills/vpick-seedance-director/`:
 
 ```bash
 # 方式 A:複製(推薦給單機使用)
-cp -r VPick-Short-Video-Skill ~/.claude/skills/vpick-storyboard
+cp -r VPick-Short-Video-Skill ~/.claude/skills/vpick-seedance-director
 
 # 方式 B:symlink(方便日後從 repo 拉新版)
-ln -s "$(pwd)/VPick-Short-Video-Skill" ~/.claude/skills/vpick-storyboard
+ln -s "$(pwd)/VPick-Short-Video-Skill" ~/.claude/skills/vpick-seedance-director
 ```
 
 確認檔案結構:
 
 ```
-~/.claude/skills/vpick-storyboard/
+~/.claude/skills/vpick-seedance-director/
 ├── SKILL.md                          # Skill 進入點 + frontmatter
 ├── README.md                         # 本檔
-└── reference/                        # 5 個階段規格 + schema
+└── reference/                        # 5 個階段規格 + 導演工法 + schema
     ├── 00-INSTRUCTIONS.md
     ├── stage1-setup-config.md
     ├── stage2-script-json-schema.md
     ├── stage3-role-board-spec.md
     ├── stage4-storyboard-spec.md
     ├── stage5-vpick-assembly.md
+    ├── seedance-director-craft.md    # 🎬 導演大腦(Style Prefix + CUT 結構 + 工法)
     └── image-prompt-schema.json
 ```
 

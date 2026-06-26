@@ -13,12 +13,13 @@
 1. **安裝 VPick MCP connector**(必要,本流程所有節點都靠 `mcp__vpick__*`)
 2. **建立 Claude Project**:
    - 把 `00-INSTRUCTIONS.md` 內容貼進 Project Instructions 欄位
-   - 把另外 6 個檔案上傳到 Project Files:
+   - 把另外 7 個檔案上傳到 Project Files:
      - `stage1-setup-config.md`
      - `stage2-script-json-schema.md`
      - `stage3-role-board-spec.md`
      - `stage4-storyboard-spec.md`
      - `stage5-vpick-assembly.md`
+     - `seedance-director-craft.md`
      - `image-prompt-schema.json`
 3. **貼一段故事腳本進對話框就開始**,例如:
 
@@ -38,6 +39,7 @@
 | `stage3-role-board-spec.md` | Project Files | Stage 3 建專案 + 並行生 角色總圖/環境平面圖/道具圖 |
 | `stage4-storyboard-spec.md` | Project Files | Stage 4 並行生繁中表格式 Storyboard |
 | `stage5-vpick-assembly.md` | Project Files | Stage 5 並行影片 + voice ref + 合併 + 最終清單 |
+| `seedance-director-craft.md` | Project Files | 🎬 導演大腦:Style Prefix + CUT 結構 + 導演工法 + 範例 |
 | `image-prompt-schema.json` | Project Files | 所有 prompt 模板 + 欄位定義 |
 
 ---
@@ -115,6 +117,22 @@
 - Stage 5 並行生成正確跑
 
 **第二次測試**:加入 Andy 範例或自己的 voice URL,驗證 Seedance 有正確帶入語音。
+
+---
+
+## v4 主要變動(對比 v3)— 整合導演工法
+
+| 項目 | v3 | v4 |
+|---|---|---|
+| Seedance prompt | shot 欄位平鋪堆疊 | **導演工法 `STYLE PREFIX → Characters → Scene → CUT`**(整合 Higgsfield Seedance Shotlist Director) |
+| 影片風格 | 多風格(visual_style) | **鎖定 8K 電影寫實**(8K IMAX Style Prefix 逐字套用每段) |
+| 表演描述 | 流水帳 | **show-don't-tell**(「jaw tightens, swallows once」不是「looks sad」) |
+| 運鏡 | 名詞(slow dolly in) | **有動機的運鏡**(slow push-in as she realizes) |
+| 拆鏡頭(Stage 2) | 依秒數平均切 | **依戲劇節奏切**(重台詞/reveal 給獨立 shot) |
+| 每個 cut 秒數 | 固定標 `duration_seconds`(≥2s,加總 ≤15s) | **不標固定秒數**,Part = 15 秒 clip,節奏交給 Seedance 判斷 |
+| 分鏡表(Stage 4) | 欄位流水帳 | **寫 blocking + 表演 beat,插圖畫空間站位** |
+| HTML shotlist | (HIG 原有) | **移除**——產物直接是 VPick `video_generator` prompt |
+| 新增檔案 | — | **`seedance-director-craft.md`**(導演大腦) |
 
 ---
 

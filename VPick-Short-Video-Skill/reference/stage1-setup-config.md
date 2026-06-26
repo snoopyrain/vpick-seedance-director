@@ -25,13 +25,11 @@
 ```
 在開始之前,我需要確認幾個基本設定:
 
-1. 影片風格(擇一或自訂):
-   - cinematic 電影感
-   - anime 動畫風
-   - photorealistic 寫實
-   - commercial 廣告風
-   - documentary 紀錄片風
-   - 其他(請描述)
+1. 影片風格:本 skill 鎖定**8K 電影寫實(photorealistic cinema)**——
+   每段 Seedance 影片都套用導演級 8K IMAX Style Prefix(光線、皮膚、運鏡、物理全寫實)。
+   - 想沿用 → 直接「確認」
+   - 想自訂全局風格 → 貼上你自己的 style prefix,我會逐字採用(覆蓋預設)
+   (細節見 seedance-director-craft.md)
 
 2. 對白/字幕語言:繁體中文 / 英文 / 其他
 
@@ -72,7 +70,8 @@
 {
   "stage": 1,
   "setup_config": {
-    "visual_style": "cinematic",
+    "visual_style": "photorealistic cinematic (8K IMAX)",
+    "video_style_prefix": "locked — 8K IMAX photorealistic cinema (see seedance-director-craft.md); override only if user pastes a custom prefix",
     "language": "zh-TW",
     "aspect_ratio": "9:16",
     "platform": "Instagram Reels",

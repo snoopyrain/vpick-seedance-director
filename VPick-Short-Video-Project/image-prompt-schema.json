@@ -50,10 +50,9 @@
   "shots_rules": {
     "shots_per_part_min": 4,
     "shots_per_part_max": 7,
-    "shot_duration_min_seconds": 2,
-    "shots_total_max_seconds": 15,
-    "shots_total_allow_under": true,
-    "note": "Shots 數量彈性 4–7,最短 shot 2 秒,加總可低於 15 秒(允許留白)"
+    "part_clip_seconds": 15,
+    "fixed_per_shot_seconds": false,
+    "note": "v4: Shots(CUTs)數量彈性 4–7。每個 Part = 一段 15 秒 Seedance clip(唯一固定時間單位)。不給每個 shot 標固定秒數 — 只排順序與戲劇 beat,Seedance 在 15 秒內自行判斷各 cut 長短。節奏靠 CUT 描述密度暗示,不寫死秒數。見 seedance-director-craft.md。"
   },
 
   "character_total_reference_template": {
@@ -172,7 +171,7 @@
     "aspect_ratio": "9:16 portrait (vertical tall rectangle)",
     "language": "繁體中文(欄位標籤與內容皆使用繁體中文)",
     "cell_layout": {
-      "header_bar": "鏡頭 N | timecode | 時長 X 秒",
+      "header_bar": "鏡頭 N(CUT N) — 不標固定秒數 / timecode(節奏由 Seedance 在 15s part 內判斷)",
       "left_side": "16:9 cinematic frame illustration",
       "right_side": "繁體中文欄位:景別 / 運鏡 / 燈光 / 動作 / 聲音 / 對白"
     },
@@ -185,7 +184,7 @@
       "  'Part {part_number} 分鏡表 | {time_range} | 專案:{project_name}'",
       "",
       "Each cell structured as:",
-      "  - Cell header bar (top, 繁體中文): '鏡頭 {n} | {timecode} | 時長 {duration} 秒'",
+      "  - Cell header bar (top, 繁體中文): '鏡頭 {n}(CUT {n})'  (NO fixed seconds / timecode)",
       "  - LEFT side: 16:9 cinematic frame illustration",
       "  - RIGHT side: labeled text fields in 繁體中文",
       "",
@@ -255,29 +254,38 @@
   },
 
   "seedance_video_prompt_template": {
-    "purpose": "Stage 5 — 每個 video_part_X 節點的 prompt(融合對白 + 平面圖 + 所有 shots)",
+    "purpose": "Stage 5 — 每個 video_part_X 節點的 prompt。導演級工法:STYLE PREFIX → Characters → Scene → CUT。每個 Part = 一個 15 秒導演 prompt,該 Part 的 shots = CUT 1/2/3。寫前必讀 seedance-director-craft.md。",
+    "craft_reference": "seedance-director-craft.md — Style Prefix、prompt 結構、mise-en-scène、pacing、acting(show-don't-tell)、continuity、camera language、worked example 全在那裡。",
     "prompt_structure": [
-      "{setup_config.visual_style} style, {environments[0].time_of_day}, {environments[0].location}.",
-      "Spatial layout reference: {environments[0].floor_plan_note}",
+      "[STYLE PREFIX — the 8K IMAX photorealistic-cinema block in seedance-director-craft.md, verbatim (unless user supplied a custom prefix in Stage 1). Placed first, repeated in full for every video_part.]",
       "",
-      "Sequence ({total_duration_seconds} seconds total, {shots.length} shots):",
-      "{for each shot in shots:}",
-      "  ({shot.time}, {shot.duration_seconds}s) {shot.shot_size}: {shot.visual_content}",
-      "    {shot.character} {shot.action}",
-      "    Lighting: {shot.lighting}",
-      "    Audio: {shot.audio}",
-      "    {if shot.dialogue:}",
-      "      Dialogue ({shot.dialogue_speaker}): \"{shot.dialogue}\"",
+      "Characters:",
+      "  {for each character in characters_in_part:}",
+      "    {character.name} ({character.id}) — short vivid anchor; carry forward state from previous parts (wet hair, blood, emotional carry); appearance locked to Stage 3 character total reference.",
       "",
-      "Color tone: {environments[0].color_tone}",
+      "Scene:",
+      "  1-2 sentences. Geo-spatial blocking from {environments_in_part floor_plan_note} — where each character is relative to the location and to each other. Include {time_of_day}, {location}.",
+      "",
+      "  {for each shot in shots (each shot = one CUT):}",
+      "  CUT {n} — {shot.shot_size} / 景別, lens feel, {shot.camera_movement}:",
+      "    {shot.visual_content} + {shot.character} {shot.action} written as a directed beat: gesture, eye-line, micro-pause, breath. What the camera does. What the light ({shot.lighting}) does. Diegetic sound ({shot.audio}).",
+      "    {if shot.dialogue:} ... and says in {language}: \"{shot.dialogue}\"",
       "",
       "DIALOGUE VOICE:",
       "{if speaking_characters not empty:}",
-      "  Use the attached voice reference audio file(s) for character voice tone and accent.",
-      "  {for each speaker in speaking_characters:}",
-      "    Speaker {speaker.name}: use voice reference URL {speaker.voice_reference_url}",
+      "  Use the attached voice reference audio file(s) for the speaker's voice tone and accent.",
+      "  {for each speaker in speaking_characters:} Speaker {speaker.name}: use voice reference #N (order = voice_refs attached in Step 5.3)",
       "",
-      "CONSISTENCY: Maintain exact character appearance, costume, environment spatial layout, and lighting as shown in reference images. Do not redesign visual elements."
+      "CONSISTENCY:",
+      "  Maintain exact character appearance, costume, environment spatial layout, color tone ({environments[0].color_tone}), and lighting as shown in the attached reference images. Do not redesign visual elements."
+    ],
+    "director_discipline": [
+      "Style Prefix repeated verbatim in every video_part prompt (Seedance takes a single prompt — global look must live in each).",
+      "Show-don't-tell acting: 'jaw tightens, swallows once' not 'looks sad'.",
+      "Every camera move motivated; design each prompt to fill all 15 seconds, no dead air.",
+      "Continuity tracker / character anchors are NOT a visible block — surface them as concrete language inside Characters and CUT lines.",
+      "Prompt text always English; dialogue原文 inside CUT quotes, marked 'says in {language}'.",
+      "NO HTML output — the artifact is the video_generator node prompt string."
     ],
     "max_prompt_length": 2000,
     "reference_images_to_attach": [

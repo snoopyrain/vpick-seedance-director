@@ -1,6 +1,8 @@
-# VPick Short Video Agent
+# VPick Seedance Director
 
-把故事腳本透過 5 階段流程,在 VPick 內生成完整短劇影片(角色 reference → 環境 reference → 分鏡表 → Seedance 2 影片 → 合併輸出)。
+把故事腳本透過 5 階段流程,在 VPick 內生成完整短劇影片(角色 reference → 環境 reference → 分鏡表 → Seedance 2 影片 → 合併輸出)——**內建電影導演級的 Seedance prompt 工法**。
+
+> 🎬 **這是 VPick 短劇流程 × Higgsfield「Seedance Shotlist Director」導演工法的整合版。** VPick 負責穩定的 5 階段管線(reference 一致性鎖、並行生成、自動合併);導演工法負責把每段影片寫成有 blocking、表演 beat、有動機運鏡的 `STYLE PREFIX → Characters → Scene → CUT` prompt。影片風格鎖定 **8K 電影寫實**。原 HIG skill 的 HTML shotlist 輸出已移除——產物直接是 VPick `video_generator` 節點的 prompt。
 
 > ⚠️ **必要前置**:VPick MCP connector 必須先安裝並連線到 Claude。本 agent 所有圖片 / 影片節點都靠 `mcp__vpick__*` 工具執行,沒有 connector 就跑不動。
 
@@ -10,8 +12,8 @@
 
 | 模式 | 資料夾 | 適合誰 |
 |---|---|---|
-| **網頁版 Claude.ai** | [`VPick-Short-Video-Project/`](./VPick-Short-Video-Project/) | 在 claude.ai 用 Project Files。上傳 7 個檔,Instructions 貼 `00-INSTRUCTIONS.md` |
-| **Claude Code CLI** | [`VPick-Short-Video-Skill/`](./VPick-Short-Video-Skill/) | 用終端機的 Claude Code。複製整個資料夾到 `~/.claude/skills/vpick-storyboard/` |
+| **網頁版 Claude.ai** | [`VPick-Short-Video-Project/`](./VPick-Short-Video-Project/) | 在 claude.ai 用 Project Files。上傳 7 個檔到 Project Files,Instructions 貼 `00-INSTRUCTIONS.md` |
+| **Claude Code CLI** | [`VPick-Short-Video-Skill/`](./VPick-Short-Video-Skill/) | 用終端機的 Claude Code。複製整個資料夾到 `~/.claude/skills/vpick-seedance-director/` |
 
 兩邊內容**完全等價**,只是封裝方式不同。詳細安裝步驟在各自的 README。
 
@@ -39,9 +41,22 @@
 | 2 | 拆解腳本 → JSON + 表格 | — | 1 個 JSON |
 | 3 | `create_project` → 角色總圖 + 環境平面圖 + 道具圖 | ✓ | 全部圖確認 |
 | 4 | 各 Part 繁中表格 Storyboard | ✓ | 全部圖確認 |
-| 5 | Seedance 影片(含對白)→ 合併 → 列檔 | ✓ | 「開始生成」+ 最終檔案清單 |
+| 5 | Seedance 影片(導演級 prompt,含對白)→ 合併 → 列檔 | ✓ | 「開始生成」+ 最終檔案清單 |
 
 每階段結束會等使用者「全部確認」才進下一階段。Stage 5 `run_video_generator` 必須等使用者明確說「開始生成」才呼叫。
+
+---
+
+## 🎬 導演工法(整合 Higgsfield Seedance Shotlist Director)
+
+本 repo 的靈魂是 `seedance-director-craft.md` —— 把 Higgsfield「Seedance Shotlist Director」skill 的電影導演工法,整合進 VPick 的 5 階段管線:
+
+- **影片風格鎖定 8K 電影寫實**(8K IMAX photoreal Style Prefix,逐字套用到每段影片)
+- **每段 prompt 用 `STYLE PREFIX → Characters → Scene → CUT 1/2/3` 結構**,寫 blocking、表演 beat(show-don't-tell)、有動機的運鏡、跨 Part 連續性
+- **不標固定 per-cut 秒數**:每個 Part = 一段 15 秒 clip,cut 之間的節奏交給 Seedance 判斷,我們只控制戲劇節奏(v4)
+- **去除原 HIG 的 HTML shotlist 輸出**:產物直接是 VPick `video_generator` 節點的 prompt 字串
+
+導演工法貫穿 Stage 2(依戲劇節奏拆鏡頭)、Stage 4(分鏡表寫 blocking 與表演)、Stage 5(導演級 video prompt)。
 
 ---
 
@@ -106,5 +121,5 @@ character_b 的 voice_reference_url 換成 https://你的mp3.com/me.mp3
 ## 開發者備註
 
 - 本 repo 內容為 prompts / instructions 文件,無程式碼需要編譯
-- `VPick-Short-Video-Project/` 與 `VPick-Short-Video-Skill/reference/` 內 7 個階段檔內容必須保持同步;若改 prompt 規格請兩邊一起改
-- 改動後本地測試流程:用一支 30 秒短劇(2 Parts、1 角色、無對白)跑一次,驗證 5 階段順序與 VPick 節點建立正確
+- `VPick-Short-Video-Project/` 與 `VPick-Short-Video-Skill/reference/` 內 8 個檔(7 階段/規格檔 + `seedance-director-craft.md`)內容必須保持同步;若改 prompt 規格請兩邊一起改
+- 改動後本地測試流程:用一支 30 秒短劇(2 Parts、1 角色、無對白)跑一次,驗證 5 階段順序、導演級 prompt 結構與 VPick 節點建立正確
